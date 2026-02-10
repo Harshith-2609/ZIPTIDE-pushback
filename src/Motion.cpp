@@ -170,6 +170,81 @@ float getAverageDistance()
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+    //TUNE HERE// TUNE HERE// TUNE HERE// TUNE HERE// TUNE HERE// TUNE HERE//
+//-----------------------------------------------------------------------------------------//
+float error = 0 ; // sensor - desired
+float prevError = 0; // position from last loop (previous error)
+float derivative = 0;
+float output = 0; 
+float integral = 0;
+float prevoutput = 0;
+float TotalError = 0; // Integral Total error = totalError + error, 
+float settlingLimit = 0.2;
+float totalTime = 150;
+bool enabledrivepid;
+float settlingTime = 30;
+
+float turnerror = 0; // sensor - desired
+float turnPrevError = 0; // pos from last loop
+float turnDerivative = 0.1;  
+float turnintegral = 0;
+float turnoutput = 0;
+float prevturnoutput = 0;
+
+// Settings
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+ float averageposition;
+
+void driveMF(float targetvalue, float timeout, float kP , float kD){///, kP = 0.15, kD = 0.9
+
+  float elapsedtime = 0;
+  float yhowmuch = Yaxis.get_position();
+  enabledrivepid = true;
+  while(enabledrivepid) {
+    averageposition = (yhowmuch/360 * (2 * M_PI));
+
+    error = targetvalue - averageposition;
+    derivative = error - prevError;
+
+    output = (kP*error) + (kD*derivative);
+    output = minVolt(output);
+    L.move(output);
+    R.move(output);
+
+    if ((fabs(error) < 1 && fabs(error - prevError) < 0.2) || (elapsedtime >= timeout)) {
+      break;
+    }
+
+    elapsedtime += 10;
+    prevError = error;
+    delay(10);
+  }
+  stops();
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+
+float restrain(float num, float min, float max){
+  if (num > max) num -= (max-min);
+  if (num < min) num += (max-min);
+  return num;
+}
+
+
+
+
 
 
 

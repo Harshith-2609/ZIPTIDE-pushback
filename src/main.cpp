@@ -133,7 +133,7 @@ void competition_initialize() {}
 // ----------------- AUTONOMOUS -----------------
 void autonomous() {
 
- skills(); 
+ driveMF(24.0, 1000, 0.15, 0.9); 
 
 }
 
