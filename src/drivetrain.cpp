@@ -12,19 +12,25 @@ bool drivetrainEnabled = true;
 int DriveTrainControls() {
   while (true) {
 
-    // if (!drivetrainEnabled) {
-    //   // Stop all drivetrain motors
-    //   auto leftMotors = pto.getActiveLeftMotors();
-    //   auto rightMotors = pto.getActiveRightMotors();
+    if (!drivetrainEnabled) {
+      // Stop all drivetrain motors
+        if (pto.getCurrentDriveMode() == DRIVE_4_MOTOR) {
+            // Handle 4-motor mode
+            Left.brake();
+            Right.brake();
+        } else if (pto.getCurrentDriveMode() == DRIVE_6_MOTOR) {
+            // Handle 6-motor mode
+            L.brake();
+            R.brake();
+        } else if (pto.getCurrentDriveMode() == DRIVE_8_MOTOR) {
+            // Handle 8-motor mode
+            DrivetrainL.brake();
+            DrivetrainR.brake();
+        }
 
-    //   for (auto *m : leftMotors)
-    //     m->brake();
-    //   for (auto *m : rightMotors)
-    //     m->brake();
-
-    //   pros::delay(10);
-    //   continue;
-    // }
+      pros::delay(10);
+      continue;
+    }
 
     int forward = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
     int turn = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
@@ -54,9 +60,8 @@ int DriveTrainControls() {
 // --------- PTO CONTROL ---------
 int DrivePTOcontrols() {
   bool DrivePTO1 = false;
-  bool eightMotor = false;
   while (true) {
-    /*if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
       if (DrivePTO1) {
         DrivePTO1 = false;
       } else {
@@ -68,28 +73,11 @@ int DrivePTOcontrols() {
       }
 
       if (DrivePTO1) {
-        DrivePTOPiston.retract();
-      } else {
-
-        DrivePTOPiston.extend();
-      }
-    }*/
-
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
-      eightMotor = !eightMotor;
-
-      if (eightMotor) {
-        // Switch to 8 motor PTO
         pto.setDriveMode(DRIVE_8_MOTOR);
       } else {
-        // Back to 4 motor drive
-        pto.setDriveMode(DRIVE_4_MOTOR);
-      }
     }
-
-    pros::delay(10);
+    }
   }
-  
 }
 
 int IntakeControls() {
@@ -147,10 +135,10 @@ int OutakeControls() {
         DrivePTO.brake();
         pto.setDriveMode(DRIVE_6_MOTOR);
       } else {
-        //drivetrainEnabled = false;
+        drivetrainEnabled = false;
         pto.setDriveMode(DRIVE_4_MOTOR);
-        //pros::delay(200);
-        //drivetrainEnabled = true;
+        pros::delay(50);
+        drivetrainEnabled = true;
       }
     }
     pros::delay(10);
@@ -185,8 +173,8 @@ int skillsMidControls() {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
       if (pto.getCurrentDriveMode() == DRIVE_4_MOTOR) {
         Midgoal.extend();
-        IntakePTO.move(85);
-        DrivePTO.move(-55);// was -65 cale wanted slower outake
+        IntakePTO.move(75);
+        DrivePTO.move(-55);
 
         while (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
           pros::delay(10);
@@ -195,7 +183,7 @@ int skillsMidControls() {
         IntakePTO.brake();
         DrivePTO.brake();
         Midgoal.retract();
-        pto.setDriveMode(DRIVE_6_MOTOR);//changed it from this// pto.setDriveMode(DRIVE_6_MOTOR);
+        pto.setDriveMode(DRIVE_6_MOTOR);
       } else {
         pto.setDriveMode(DRIVE_4_MOTOR);
       }
@@ -234,28 +222,5 @@ int Hookcontrols() {
         Hook.retract();
     }
     pros::delay(10);
-  }
-}
-
-
-int PTOStatusDisplay() {
-  while (true) {
-    master.clear_line(0);
-
-    switch (pto.getCurrentDriveMode()) {
-      case DRIVE_4_MOTOR:
-        master.print(0, 0, "PTO: 4 Motor");
-        break;
-
-      case DRIVE_6_MOTOR:
-        master.print(0, 0, "PTO: 6 Motor");
-        break;
-
-      case DRIVE_8_MOTOR:
-        master.print(0, 0, "PTO: 8 Motor");
-        break;
-    }
-
-    pros::delay(200);
   }
 }

@@ -119,9 +119,22 @@ void suck()// 3x4 blocks mid and long goal
 
 }
 
+void scoring(){
+  chassis.cancelMotion();
+  pto.setDriveMode(DRIVE_4_MOTOR);
+  DrivePTO.move(-127); // outakes into far long goal 3 blocks
+  Intake2.move(-127);
+  pros::delay(100);
+  Intake2.move(127);
+  DrivePTO.move(127); // outakes into far long goal 3 blocks
+  pros::delay(3000);
+  DrivePTO.brake();
+  pto.setDriveMode(DRIVE_6_MOTOR);
+}
+
 void skills(){
   Intake2.move(127);
-  chassis.moveToPoint(0, -35, 1000, {.forwards = false}, true);
+  chassis.moveToPoint(0, -36, 1000, {.forwards = false}, true);
   pros::delay(450);
   Loader.extend();
   chassis.waitUntilDone();
@@ -129,22 +142,26 @@ void skills(){
 
 
   /////////////////////// MATCH LOADER//////////////////////////////////
-  chassis.moveToPoint(-12, -38, 1000, {.forwards = true}, false); /// into match loader
-  pros::Task::delay(2000);
+  chassis.moveToPoint(-12.5, -38, 1000, {.forwards = true}, false); /// into match loader
+  pros::Task::delay(1000);
+  chassis.moveToPoint(-12.5, -39, 800, {.forwards = true}, false); /// into match loader
+  pros::delay(300);
   // chassis.moveToPoint(0, -38, 1500, {.forwards = false}, false); 
   // Intake2.brake();
   // chassis.turnToHeading(315, 1000);
-  chassis.moveToPoint(13, -53.5, 1500, {.forwards = false, .minSpeed = 90, .earlyExitRange = 9.5}, false);
-  Intake2.brake();
+  chassis.moveToPoint(13, -54.5, 1500, {.forwards = false, .minSpeed = 90, .earlyExitRange = 9.5}, false);
 
   ///////////////////////////ACROSS FIELD//////////////////////////////
   chassis.turnToHeading(270, 1000, {.maxSpeed = 127}, false);
-  chassis.setPose(0, 0, 0);
   Loader.retract();
-  chassis.moveToPoint(0, -64, 1000, {.forwards = false, .minSpeed = 90, .earlyExitRange = 5.5}, false);
-  chassis.moveToPoint(17, -73, 1000, {.forwards = false, .minSpeed = 90, .earlyExitRange = 9.5}, false);
-  chassis.turnToHeading(180, 1000, {.maxSpeed = 127}, false);
-  chassis.moveToPoint(18, -45, 1000, {.forwards = false}, false);
+  Intake2.brake();
+  chassis.moveToPoint(73, -53.5, 1800, {.forwards = false}, false);
+  chassis.moveToPoint( 88, -33, 1000, {.forwards = false}, false);
+  chassis.turnToHeading(90, 1000, {.maxSpeed = 127}, false);
+  chassis.moveToPoint(58, -35, 1100, {.forwards = false}, false);//-31.5
+  float yhere = chassis.getPose().y;
+  //chassis.turnToHeading(90, 1000, {.maxSpeed = 127}, false);
+
 
   /////////////////////////SCORE LONG GOAL 7 BLOCKS//////////////////////////////
   chassis.cancelMotion();
@@ -155,16 +172,23 @@ void skills(){
   pros::delay(100);
   Intake2.move(127);
   DrivePTO.move(127); // outakes into far long goal 3 blocks
-  pros::delay(3000);
+  pros::delay(2500);
   DrivePTO.brake();
   pto.setDriveMode(DRIVE_6_MOTOR);
+ 
+
+ // chassis.setPose(65, -34, 90);
 
 
 
   ///////////////////////////MATCH LOADER 2/////////////////////////////////////
-  chassis.moveToPoint(16, -84, 1500, {.forwards = true, .maxSpeed = 127}, false);//////AT LONG GOAL SIDE
-  pros::delay(2000);
-  chassis.moveToPoint(15, -53, 1500, {.forwards = false}, false);//////AT LONG GOAL SIDE
+  //chassis.moveToPoint(80, -30, 1500, {.forwards = true, .minSpeed =90, .earlyExitRange = 9.5}, false);//////AT LONG GOAL SIDE
+  //chassis.turnToHeading(90, 700, {.maxSpeed =127}, false);
+
+  chassis.moveToPoint(96.5, yhere, 1500, {.forwards = true}, false);//////AT LONG GOAL SIDE //-31
+  chassis.moveToPoint(104, yhere , 1500, {.forwards = true}, false);//////AT LONG GOAL SIDE //-31
+  pros::delay(1500);
+  chassis.moveToPoint(62,yhere, 1500, {.forwards = false}, false);//////AT LONG GOAL SIDE // -31.5
 
 
 
@@ -182,60 +206,49 @@ void skills(){
   pto.setDriveMode(DRIVE_6_MOTOR);
 
   /////////////////////GOING TO THE NEXT MATCH LOADER 3//////////////////////////
-  chassis.moveToPoint(13, -70, 1500, {.forwards = true}, false);
-  chassis.turnToHeading(270, 1000, {.maxSpeed = 127}, false);
-  chassis.moveToPoint(113, -70, 3500, {.forwards = false}, true); 
-  chassis.turnToHeading(180, 1000, {.maxSpeed = 127}, false);
+  chassis.moveToPoint(82, yhere, 1500, {.forwards = true}, false);
+  chassis.turnToHeading(180, 1500, {.maxSpeed = 127}, false);
+  chassis.moveToPoint(81, 61, 2500, {.forwards = false}, false); 
+  chassis.turnToHeading(90, 1000, {.maxSpeed = 127}, false);
+  chassis.moveToPoint(60, 61, 2500, {.forwards = false}, false); 
+  yhere = chassis.getPose().y;
   Intake2.move(127);
-  chassis.moveToPoint(113, -85, 1000, {.forwards = true}, false);////into match loader
+  chassis.moveToPoint(102, yhere, 1000, {.forwards = true}, false);////into match loader
+  chassis.moveToPoint(104, yhere, 700, {.forwards = true}, false);////into match loader
   pros::delay(2000);
 
 
   ///////////////////////////SET UP TO OTHER SIDE//////////////////////////////
-  chassis.moveToPoint(113, -70, 1000, {.forwards = false}, false);
-  chassis.turnToHeading(225, 1000, {.maxSpeed = 127}, false);
-  chassis.moveToPoint(125, -61, 1000, {.forwards = false}, false);
-  chassis.turnToHeading(180, 1000, {.maxSpeed = 127}, false);
-  chassis.moveToPoint(125, 18, 2500, {.forwards = false}, true);
-  Loader.retract();
-  chassis.waitUntilDone();
+  chassis.moveToPoint(80, 75, 1000, {.forwards = false}, false);
   chassis.turnToHeading(90, 1000, {.maxSpeed = 127}, false);
-  chassis.moveToPoint(107, 18, 1500, {.forwards = false}, false);////long goal side
-  chassis.turnToHeading(0, 1000, {.maxSpeed = 127}, false);
-  chassis.moveToPoint(107, -5, 1500, {.forwards = false}, true);////long goal side
+  Loader.retract();
+  chassis.moveToPoint(15, 77, 1000, {.forwards = false}, false);
+  chassis.moveToPoint(10, 52, 2500, {.forwards = false}, false);
+  chassis.turnToHeading(270, 1000, {.maxSpeed = 127}, false);
+  chassis.moveToPoint(30, yhere, 1500, {.forwards = false}, false);////long goal side
   Loader.extend();
-  chassis.waitUntilDone();
+  yhere = chassis.getPose().y;
 
   // /////////////////////////SCORE LONG GOAL 6 BLOCKS//////////////////////////////
 
-  // chassis.cancelMotion();
-  // pto.setDriveMode(DRIVE_4_MOTOR);
-  // DrivePTO.move(-127); // outakes into far long goal 3 blocks
-  // Intake2.move(-127);
-  // pros::delay(100);
-  // Intake2.move(127);
-  // DrivePTO.move(127); // outakes into far long goal 3 blocks
-  // pros::delay(3000);
-  // DrivePTO.brake();
-  // pto.setDriveMode(DRIVE_6_MOTOR);
+  chassis.cancelMotion();
+  pto.setDriveMode(DRIVE_4_MOTOR);
+  DrivePTO.move(-127); // outakes into far long goal 3 blocks
+  Intake2.move(-127);
+  pros::delay(100);
+  Intake2.move(127);
+  DrivePTO.move(127); // outakes into far long goal 3 blocks
+  pros::delay(3000);
+  DrivePTO.brake();
+  pto.setDriveMode(DRIVE_6_MOTOR);
 
   // ///////////////////////////MATCH LOADER 4 /////////////////////////////////////
-  // chassis.moveToPoint(107, 35, 1500, {.forwards = true}, false);////long goal side
-  // pros::delay(2000);
-  // chassis.moveToPoint(107, -5, 1500, {.forwards = false}, false);////long goal side
-
-
-  // /////////////////////////SCORE LONG GOAL 6 BLOCKS//////////////////////////////
-  // chassis.cancelMotion();
-  // pto.setDriveMode(DRIVE_4_MOTOR);
-  // DrivePTO.move(-127); // outakes into far long goal 3 blocks
-  // Intake2.move(-127);
-  // pros::delay(100);
-  // Intake2.move(127);
-  // DrivePTO.move(127); // outakes into far long goal 3 blocks
-  // pros::delay(3000);
-  // DrivePTO.brake();
-  // pto.setDriveMode(DRIVE_6_MOTOR);
+  chassis.moveToPoint(-10, yhere, 1500, {.forwards = true}, false);////long goal side
+  pros::delay(500);
+  chassis.moveToPoint(-11, yhere, 1500, {.forwards = true}, false);////long goal side
+  pros::delay(1000);
+  chassis.moveToPoint(30, yhere, 1500, {.forwards = false}, false);////long goal side
+  scoring();
 
 }
 
@@ -323,31 +336,6 @@ void SAWP(){
   Loader.retract();
 
 }
-
-void QualsRight7Block()
-{
-    ////Going to start the robot at angle 0
-    Intake2.move(127); 
-    chassis.turnToHeading(43, 1000, {.maxSpeed = 127}, false);// initial turn to the 3 blocks 
-
-    chassis.moveToPoint(13, 30, 5000, {.forwards = false}, false);
-
-    chassis.turnToHeading(135, 1000, {.maxSpeed = 127}, false);
-
-    chassis.moveToPoint(37, 5, 5000, {.forwards = false}, false);
-
-    chassis.cancelMotion();
-    Loader.extend();
-    pto.setDriveMode(DRIVE_4_MOTOR);
-    chassis.turnToHeading(180, 1000, {.maxSpeed = 127}, false); /// turns to face the match loader
-
-    chassis.moveToPoint(38, -14, 5000, {.forwards = false}, false);
-    pros::delay(800);   
-    chassis.moveToPoint(37, 30, 5000, {.forwards = false}, false);
-    DrivePTO.move(127); // outakes into far long goal 7 blocks
-
-}
-
 
 
 

@@ -182,20 +182,7 @@ float derivative = 0;
 float output = 0; 
 float integral = 0;
 float prevoutput = 0;
-float TotalError = 0; // Integral Total error = totalError + error, 
-float settlingLimit = 0.2;
-float totalTime = 150;
 bool enabledrivepid;
-float settlingTime = 30;
-
-float turnerror = 0; // sensor - desired
-float turnPrevError = 0; // pos from last loop
-float turnDerivative = 0.1;  
-float turnintegral = 0;
-float turnoutput = 0;
-float prevturnoutput = 0;
-
-// Settings
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -204,23 +191,27 @@ float prevturnoutput = 0;
  
  float averageposition;
 
-void driveMF(float targetvalue, float timeout, float kP , float kD){///, kP = 0.15, kD = 0.9
+void driveMF(float targetvalue, float timeout, float kP , float kD){
 
   float elapsedtime = 0;
-  float yhowmuch = Yaxis.get_position();
+  Yaxis.reset_position();
   enabledrivepid = true;
   while(enabledrivepid) {
-    averageposition = (yhowmuch/360 * (2 * M_PI));
+    averageposition = chassis.getPose().y;//((Yaxis.get_position()/360.0 )* (2 * M_PI));
 
     error = targetvalue - averageposition;
-    derivative = error - prevError;
+    derivative = (error - prevError);
+    
 
-    output = (kP*error) + (kD*derivative);
-    output = minVolt(output);
+    output = (kP*error) + (kD*derivative);// kD = 3, Kp = 7
+
+    if (output > 127) output = 127;
+    if (output < -127) output = -127;
+
     L.move(output);
     R.move(output);
 
-    if ((fabs(error) < 1 && fabs(error - prevError) < 0.2) || (elapsedtime >= timeout)) {
+    if ((fabs(error) < 1) || (elapsedtime >= timeout)) {
       break;
     }
 
@@ -228,7 +219,12 @@ void driveMF(float targetvalue, float timeout, float kP , float kD){///, kP = 0.
     prevError = error;
     delay(10);
   }
-  stops();
+    L1.brake();
+    L2.brake();
+    PTOL3.brake();
+    R6.brake();
+    R7.brake();
+    PTOR8.brake();
 }
 
 
