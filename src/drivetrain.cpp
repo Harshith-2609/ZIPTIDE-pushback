@@ -2,7 +2,6 @@
 #include "main.h"
 #include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
-#include "pros/rtos.hpp"
 
 // Helper for voltage
 float tovolt(float percentage) { return (percentage * 12000.0 / 100.0); }
@@ -145,35 +144,6 @@ int OutakeControls() {
     pros::delay(10);
   }
 }
-/*
-int OutakeControls() {
-  while (true) {
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-      if (pto.getCurrentDriveMode() == DRIVE_4_MOTOR) {
-
-        IntakePTO.move(127);
-        DrivePTO.move(-127);
-
-        while (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-          pros::delay(10);
-        }
-
-        IntakePTO.brake();
-        DrivePTO.brake();
-        pto.setDriveMode(DRIVE_6_MOTOR);
-
-      } else {
-        drivetrainEnabled = false;
-        pto.setDriveMode(DRIVE_4_MOTOR);
-        pros::delay(50);
-        drivetrainEnabled = true;
-      }
-    }
-    pros::delay(10);
-  }
-}*/
-
-
 int MidControls() {
   while (true) {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
@@ -211,44 +181,6 @@ int skillsMidControls() {
         Midgoal.extend();
 
         IntakePTO.move(85);
-        DrivePTO.move(-60);
-
-        while (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-          pros::delay(10);
-        }
-
-        IntakePTO.brake();
-        DrivePTO.brake();
-        Midgoal.retract();
-        pto.setDriveMode(DRIVE_6_MOTOR);
-      } else {
-        pto.setDriveMode(DRIVE_4_MOTOR);
-      }
-    }
-    pros::delay(10);
-  }
-}
-/*
-int skillsMidControls() {
-  while (true) {
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-      if (pto.getCurrentDriveMode() == DRIVE_4_MOTOR) {
-
-        // 1) Put down match loader
-        Loader.extend();
-        pros::delay(150);
-
-        // 2) Reverse intake for 0.25 sec
-        IntakePTO.move(-127);
-        DrivePTO.move(-127);
-        pros::delay(250);
-
-        IntakePTO.brake();
-        DrivePTO.brake();
-
-        // 3) Midgoal at low speed
-        Midgoal.extend();
-        IntakePTO.move(55);
         DrivePTO.move(-55);
 
         while (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
@@ -259,7 +191,6 @@ int skillsMidControls() {
         DrivePTO.brake();
         Midgoal.retract();
         pto.setDriveMode(DRIVE_6_MOTOR);
-
       } else {
         pto.setDriveMode(DRIVE_4_MOTOR);
       }
@@ -268,7 +199,6 @@ int skillsMidControls() {
   }
 }
 
-*/
 // --------- LOADER ---------
 int Loadercontrols() {
   static bool Loader1 = false;

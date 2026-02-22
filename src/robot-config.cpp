@@ -36,8 +36,8 @@ pros::MotorGroup Intake4({-15, 20, 18, -13}, pros::MotorGears::blue); //LIntake,
 pros::Imu inertial19(6);
 pros::Rotation Yaxis(-14);
 pros::Rotation Xaxis(-17);
-//Distance distX(16);
-//Distance distY(19);
+Distance distX(21);
+//Distance distY(21);
 
 
 // Pneumatic definitions

@@ -45,7 +45,7 @@ lemlib::ControllerSettings angular_controller(2.15, 0.0001, 15, 15, 0, 0, 0, 0,
 // Chassis
 lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller,
                         sensors);
-
+/*
 void reset(float zero) {/// resets the odometry to (0,0,0) if you type 0 in the parameter or to the distance sensor readings if you type any other number
 
   if (zero == 0) {
@@ -80,6 +80,12 @@ void reset(float zero) {/// resets the odometry to (0,0,0) if you type 0 in the 
   
   }
 
+}*/
+
+float xdist(){
+  float rightmm = distX.get();
+  if (rightmm <= 0) return 0;
+  return (rightmm / 25.4)-5.5; // right offset
 }
 
 
