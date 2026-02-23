@@ -140,7 +140,8 @@ void competition_initialize() {}
 void autonomous() {
 
  //driveMF(24.0, 10000, 4, 1); 
- skills();
+ //skills();
+ SAWP();
 
 }
 

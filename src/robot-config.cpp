@@ -28,6 +28,7 @@ pros::MotorGroup IntakePTO({-15, 20}, pros::MotorGears::blue); //LIntake, RIntak
 pros::MotorGroup Drivetrain({-12, -11, 16, 19}, pros::MotorGears::blue); //L1, L2, R6, R7
 pros::MotorGroup DrivetrainL({-12, -11, 13, 15}, pros::MotorGears::blue); //L1, L2, PTOL3, LIntake
 pros::MotorGroup DrivetrainR({16, 19, -18, -20}, pros::MotorGears::blue); //R6, R7, PTOR8, RIntake
+pros::MotorGroup Drivetrainall({-12, -11, 16, 19, 13, -18, 15, -20}, pros::MotorGears::blue); //L1, L2, R6, R7, PTOL3, PTOR8, LIntake, RIntake
 pros::MotorGroup Left({-12, -11}, pros::MotorGears::blue); //L1, L2
 pros::MotorGroup Right({19, 16}, pros::MotorGears::blue); //R6, R7
 pros::MotorGroup Intake2({-15, 20}, pros::MotorGears::blue); //LIntake, RIntake
