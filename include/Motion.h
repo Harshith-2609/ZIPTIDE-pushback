@@ -8,3 +8,4 @@ void turn(double targetHeading);
 void arc(double radiusInches, double angleDeg);
 void Sweep(double targetAngleDeg, bool left);
 void driveMF(float targetvalue, float timeout, float kP, float kD);
+void driveForwardPID8(float distInches, float timeoutMs, float kP, float kD, float minSpeed = 15);
