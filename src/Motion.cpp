@@ -232,6 +232,50 @@ void driveMF(float targetvalue, float timeout, float kP , float kD){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
  
 
+
+
+/**
+ * @brief Drives forward using an 8-motor drivetrain (4 left, 4 right) with PD control.
+ */
+void driveForwardPID8(float distInches, float timeoutMs, float kP, float kD, float minSpeed) {
+    Yaxis.reset_position();
+
+    float prevErr = 0;
+    float elapsed = 0;
+
+    while (elapsed <= timeoutMs) {
+        // Rotation sensor is in degrees. Convert to linear inches.
+        const float wheelDiameterIn = 3.25f;
+        const float gearRatio = 0.8f; // wheel turns per motor turn (48:60)
+        float currentInches = (Yaxis.get_position() / 360.0f) * (static_cast<float>(M_PI) * wheelDiameterIn) * gearRatio;
+
+        float err = distInches - currentInches;
+        float deriv = err - prevErr;
+
+        float output = (kP * err) + (kD * deriv);
+        output = clamp(output, -127.0f, 127.0f);
+
+        // keep enough power to overcome stiction while still preserving sign
+        if (fabs(output) > 0.01f && fabs(output) < minSpeed) {
+            output = (output > 0) ? minSpeed : -minSpeed;
+        }
+
+        // 4 motors left + 4 motors right
+        DrivetrainL.move(output);
+        DrivetrainR.move(output);
+
+        if (fabs(err) < 0.75f) {
+            break;
+        }
+
+        prevErr = err;
+        elapsed += 10;
+        pros::delay(10);
+    }
+
+    DrivetrainL.brake();
+    DrivetrainR.brake();
+}
 float restrain(float num, float min, float max){
   if (num > max) num -= (max-min);
   if (num < min) num += (max-min);
