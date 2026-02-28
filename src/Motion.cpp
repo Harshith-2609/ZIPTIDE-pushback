@@ -240,42 +240,62 @@ void driveMF(float targetvalue, float timeout, float kP , float kD){
 void driveForwardPID8(float distInches, float timeoutMs, float kP, float kD, float minSpeed) {
     Yaxis.reset_position();
 
-    float prevErr = 0;
+    constexpr float dtMs = 10.0f;
+    constexpr float dtSec = dtMs / 1000.0f;
+    constexpr float settleErrorIn = 0.75f;
+    constexpr int settleCyclesNeeded = 8;  // ~80 ms inside settle band
+    constexpr float minSpeedEnableErrorIn = 2.0f;
+    constexpr float maxDeltaPerCycle = 8.0f;
+
+    float prevErr = distInches;
+    float prevOutput = 0;
     float elapsed = 0;
+    int settleCycles = 0;
 
     while (elapsed <= timeoutMs) {
         // Rotation sensor is in degrees. Convert to linear inches.
-        const float wheelDiameterIn = 3.25f;
-        const float gearRatio = 0.8f; // wheel turns per motor turn (48:60)
-        float currentInches = (Yaxis.get_position() / 360.0f) * (static_cast<float>(M_PI) * wheelDiameterIn) * gearRatio;
+        constexpr float wheelDiameterIn = 3.25f;
+        constexpr float gearRatio = 0.8f; // wheel turns per motor turn (48:60)
+        const float currentInches = (Yaxis.get_position() / 360.0f) *
+                                    (static_cast<float>(M_PI) * wheelDiameterIn) * gearRatio;
 
-        float err = distInches - currentInches;
-        float deriv = err - prevErr;
+        const float err = distInches - currentInches;
+        const float deriv = (err - prevErr) / dtSec;
 
         float output = (kP * err) + (kD * deriv);
-        output = clamp(output, -127.0f, 127.0f);
 
-        // keep enough power to overcome stiction while still preserving sign
-        if (fabs(output) > 0.01f && fabs(output) < minSpeed) {
+        // keep enough power to overcome stiction only when we are not near target
+        if (fabs(output) > 0.01f && fabs(output) < minSpeed && fabs(err) > minSpeedEnableErrorIn) {
             output = (output > 0) ? minSpeed : -minSpeed;
         }
+
+        // slew limit to avoid aggressive forward/reverse flips
+        const float delta = clamp(output - prevOutput, -maxDeltaPerCycle, maxDeltaPerCycle);
+        output = prevOutput + delta;
+
+        output = clamp(output, -127.0f, 127.0f);
 
         // 4 motors left + 4 motors right
         DrivetrainL.move(output);
         DrivetrainR.move(output);
 
-        if (fabs(err) < 0.75f) {
-            break;
+        if (fabs(err) < settleErrorIn) {
+            settleCycles++;
+            if (settleCycles >= settleCyclesNeeded) break;
+        } else {
+            settleCycles = 0;
         }
 
         prevErr = err;
-        elapsed += 10;
+        prevOutput = output;
+        elapsed += dtMs;
         pros::delay(10);
     }
 
     DrivetrainL.brake();
     DrivetrainR.brake();
 }
+
 float restrain(float num, float min, float max){
   if (num > max) num -= (max-min);
   if (num < min) num += (max-min);

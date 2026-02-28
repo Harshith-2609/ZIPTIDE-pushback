@@ -39,8 +39,8 @@ lemlib::ControllerSettings lateral_controller(8, 0, 40, 0, 0, 0, 0, 0,
 // 
 // lemlib::ControllerSettings angular_controller(2.15, 0.0001, 15, 15, 0, 0, 0, 0,
 //                                              0);                                             
-lemlib::ControllerSettings angular_controller(2.15, 0.0001, 15, 15, 0, 0, 0, 0,
-                                              0);
+lemlib::ControllerSettings angular_controller(3.15, 0.0001, 15, 15, 0, 0, 0, 0,
+                                              0);//2.15,3.15
 
 // Chassis
 lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller,
@@ -142,6 +142,7 @@ void autonomous() {
  //driveMF(24.0, 10000, 4, 1); 
  //skills();
  SAWP();
+ //test();
 
 }
 
