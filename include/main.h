@@ -24,7 +24,8 @@
  * E_CONTROLLER_MASTER is pedantically correct within the PROS styleguide, but
  * not convenient for most student programmers.
  */
-#include "pros/adi.hpp"
+//#include "pros/adi.hpp"
+#include "pros/ai_vision.h"
 #include "pros/distance.hpp"
 #define PROS_USE_SIMPLE_NAMES
 
@@ -106,11 +107,13 @@ extern pros::adi::Pneumatics Loader;
 extern pros::adi::Pneumatics Hook;
 extern Distance distX;
 extern Distance distY;
+extern pros::AIVision ai_sensor;
 
 // declarations for classes
 extern PTOManager pto;
 // lemlib declarations for classes
 extern lemlib::Chassis chassis;
+extern lemlib::Chassis chassis2;
 extern lemlib::OdomSensors sensors;
 extern lemlib::ControllerSettings lateral_controller;
 extern lemlib::ControllerSettings angular_controller;

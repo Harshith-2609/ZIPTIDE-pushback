@@ -123,8 +123,9 @@ int IntakeRevControls() {
 int OutakeControls() {
   while (true) {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+      IntakePTO.move(127);
       if (pto.getCurrentDriveMode() == DRIVE_4_MOTOR) {
-        IntakePTO.move(127);
+        //IntakePTO.move(127);
         DrivePTO.move(127);
 
         while (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
@@ -137,7 +138,7 @@ int OutakeControls() {
       } else {
         drivetrainEnabled = false;
         pto.setDriveMode(DRIVE_4_MOTOR);
-        pros::delay(50);
+        pros::delay(1);
         drivetrainEnabled = true;
       }
     }
@@ -173,15 +174,15 @@ int skillsMidControls() {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
       if (pto.getCurrentDriveMode() == DRIVE_4_MOTOR) {
         //Loader.extend();
-        IntakePTO.move(-127);
-        DrivePTO.move(-127);
-        pros::delay(150);
-        IntakePTO.brake();
-        DrivePTO.brake();
+        // IntakePTO.move(-127);
+        // DrivePTO.move(-127);
+        // pros::delay(150);
+        // IntakePTO.brake();
+        // DrivePTO.brake();
         Midgoal.extend();
 
         IntakePTO.move(85);
-        DrivePTO.move(-50);
+        DrivePTO.move(-127);
 
         while (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
           pros::delay(10);
@@ -189,8 +190,8 @@ int skillsMidControls() {
 
         IntakePTO.brake();
         DrivePTO.brake();
-        //Midgoal.retract();
-        //pto.setDriveMode(DRIVE_6_MOTOR);
+        Midgoal.retract();
+        pto.setDriveMode(DRIVE_6_MOTOR);
       } else {
         pto.setDriveMode(DRIVE_4_MOTOR);
       }

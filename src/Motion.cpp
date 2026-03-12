@@ -191,7 +191,7 @@ bool enabledrivepid;
  
  float averageposition;
 
-void driveMF(float targetvalue, float timeout, float kP , float kD){
+void driveM6(float targetvalue, float timeout, float kP , float kD){
 
   float elapsedtime = 0;
   Yaxis.reset_position();
@@ -208,9 +208,8 @@ void driveMF(float targetvalue, float timeout, float kP , float kD){
     if (output > 127) output = 127;
     if (output < -127) output = -127;
 
-    L.move(output);
-    R.move(output);
-
+    chassis.tank(output, output);
+ 
     if ((fabs(error) < 1) || (elapsedtime >= timeout)) {
       break;
     }
