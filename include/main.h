@@ -105,6 +105,7 @@ extern pros::adi::Pneumatics IntakePTOPiston;
 extern pros::adi::Pneumatics Midgoal;
 extern pros::adi::Pneumatics Loader;
 extern pros::adi::Pneumatics Hook;
+extern pros::adi::Pneumatics Low;
 extern Distance distX;
 extern Distance distY;
 extern pros::AIVision ai_sensor;
@@ -114,6 +115,7 @@ extern PTOManager pto;
 // lemlib declarations for classes
 extern lemlib::Chassis chassis;
 extern lemlib::Chassis chassis2;
+extern lemlib::Chassis chassis3;
 extern lemlib::OdomSensors sensors;
 extern lemlib::ControllerSettings lateral_controller;
 extern lemlib::ControllerSettings angular_controller;

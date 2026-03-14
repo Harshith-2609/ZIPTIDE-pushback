@@ -226,6 +226,41 @@ void driveM6(float targetvalue, float timeout, float kP , float kD){
     PTOR8.brake();
 }
 
+void driveM8(float targetvalue, float timeout, float kP , float kD){
+
+  float elapsedtime = 0;
+  Yaxis.reset_position();
+  enabledrivepid = true;
+  while(enabledrivepid) {
+    averageposition = chassis3.getPose().y;//((Yaxis.get_position()/360.0 )* (2 * M_PI));
+
+    error = targetvalue - averageposition;
+    derivative = (error - prevError);
+    
+
+    output = (kP*error) + (kD*derivative);// kD = 3, Kp = 7
+
+    if (output > 127) output = 127;
+    if (output < -127) output = -127;
+
+    chassis3.tank(output, output);
+ 
+    if ((fabs(error) < 1) || (elapsedtime >= timeout)) {
+      break;
+    }
+
+    elapsedtime += 10;
+    prevError = error;
+    delay(10);
+  }
+    L1.brake();
+    L2.brake();
+    PTOL3.brake();
+    R6.brake();
+    R7.brake();
+    PTOR8.brake();
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

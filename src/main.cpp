@@ -1,5 +1,6 @@
 #include "main.h"
 #include "Autons.h"
+#include "Motion.h"
 #include "pros/distance.hpp"
 #include "pros/motors.h"
 
@@ -40,6 +41,7 @@ void initialize_drivetrain_selection(bool Drivetrain_Motors) {
 // Drivetrain / LemLib config
 lemlib::Drivetrain drivetrain(&L, &R, 12.25, lemlib::Omniwheel::NEW_325, 480, 0);
 lemlib::Drivetrain drivetrain2(&Left, &Right, 12.25, lemlib::Omniwheel::NEW_325, 480, 0);
+lemlib::Drivetrain drivetrain3(&DrivetrainL, &DrivetrainR, 12.25, lemlib::Omniwheel::NEW_325, 480, 0);
 // Odom wheels
 lemlib::TrackingWheel horizontal_tracking_wheel(&Xaxis, 2, 1.8);
 lemlib::TrackingWheel vertical_tracking_wheel(&Yaxis, 2, 0.8);
@@ -58,7 +60,7 @@ lemlib::ControllerSettings angular_controller(4.15, 0, 34, 0, 2, 20, 10, 200,
 // Chassis
 lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller, sensors);
 lemlib::Chassis chassis2(drivetrain2, lateral_controller, angular_controller, sensors);
-
+lemlib::Chassis chassis3(drivetrain3, lateral_controller, angular_controller, sensors);
 
 // ----------------- ODOM DEBUG TASK -----------------
 void odomDebug(void*) {
@@ -106,8 +108,10 @@ void competition_initialize() {}
 
 // ----------------- AUTONOMOUS -----------------
 void autonomous() {
- RightWing();
- //driveMF(24.0, 10000, 4, 1); 
+ //RightWing();
+ pto.setDriveMode(DRIVE_8_MOTOR);
+ driveM8(60.0, 10000, 4, 0);
+ //splitLeft();
  //skills();
  //SAWP();
  //test();

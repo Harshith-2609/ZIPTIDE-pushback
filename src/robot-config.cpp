@@ -1,4 +1,5 @@
 #include "main.h"
+#include "pros/ai_vision.hpp"
 #include "pros/distance.hpp"
 using namespace pros;
 
@@ -38,12 +39,14 @@ pros::Imu inertial19(6);
 pros::Rotation Yaxis(-14);
 pros::Rotation Xaxis(-17);
 Distance distX(21);
+pros::AIVision ai_sensor(7);
 //Distance distY(21);
 
 
 // Pneumatic definitions
 pros::adi::Pneumatics DrivePTOPiston('B', false);
-pros::adi::Pneumatics IntakePTOPiston('A', false);
-pros::adi::Pneumatics Midgoal('G', false);
-pros::adi::Pneumatics Loader('F', false);
+pros::adi::Pneumatics IntakePTOPiston('F', false);
+pros::adi::Pneumatics Midgoal('A', false);
+pros::adi::Pneumatics Loader('G', false);
 pros::adi::Pneumatics Hook('H', false);
+pros::adi::Pneumatics Low('E', false);

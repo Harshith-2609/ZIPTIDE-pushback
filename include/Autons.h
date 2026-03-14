@@ -5,4 +5,5 @@ void SAWP();
 void skills();
 void RightWing();
 void LeftWing();
-void split_Left();
+void splitLeft();
+void splitRight();

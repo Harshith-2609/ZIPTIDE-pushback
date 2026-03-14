@@ -232,3 +232,18 @@ int Hookcontrols() {
     pros::delay(10);
   }
 }
+
+int Lowcontrols() {
+  while (true) {
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+      Low.extend();
+        while (master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+          IntakePTO.move(-127);
+          }
+      IntakePTO.brake();
+      Low.retract();
+
+    }
+    pros::delay(10);
+  }
+}
