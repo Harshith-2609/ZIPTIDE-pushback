@@ -13,5 +13,4 @@ int DrivePTOcontrols();
 int Loadercontrols();
 int Hookcontrols();
 int skillsMidControls();
-int PTOStatusDisplay();
 int Lowcontrols();

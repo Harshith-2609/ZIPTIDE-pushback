@@ -106,8 +106,10 @@ extern pros::adi::Pneumatics Midgoal;
 extern pros::adi::Pneumatics Loader;
 extern pros::adi::Pneumatics Hook;
 extern pros::adi::Pneumatics Low;
-extern Distance distX;
-extern Distance distY;
+extern Distance distR;
+extern Distance distL;
+extern Distance distF;
+extern Distance distB;
 extern pros::AIVision ai_sensor;
 
 // declarations for classes

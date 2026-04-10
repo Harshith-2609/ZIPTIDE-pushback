@@ -1,6 +1,7 @@
 #include "main.h"
 #include "Autons.h"
 #include "Motion.h"
+#include "liblvgl/llemu.h"
 #include "pros/distance.hpp"
 #include "pros/motors.h"
 
@@ -14,7 +15,7 @@ PTOManager pto(
     {&L1, &L2, &PTOL3, &LIntake},
     {&R6, &R7, &PTOR8, &RIntake},
     'B',
-    'A'
+    'F'
     
 );
 
@@ -43,8 +44,8 @@ lemlib::Drivetrain drivetrain(&L, &R, 12.25, lemlib::Omniwheel::NEW_325, 480, 0)
 lemlib::Drivetrain drivetrain2(&Left, &Right, 12.25, lemlib::Omniwheel::NEW_325, 480, 0);
 lemlib::Drivetrain drivetrain3(&DrivetrainL, &DrivetrainR, 12.25, lemlib::Omniwheel::NEW_325, 480, 0);
 // Odom wheels
-lemlib::TrackingWheel horizontal_tracking_wheel(&Xaxis, 2, 1.8);
-lemlib::TrackingWheel vertical_tracking_wheel(&Yaxis, 2, 0.8);
+lemlib::TrackingWheel horizontal_tracking_wheel(&Xaxis, 2, 1.8);//1.8
+lemlib::TrackingWheel vertical_tracking_wheel(&Yaxis, 2, 0.8);//0.3
 
 // Odom sensors
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, nullptr, &horizontal_tracking_wheel, nullptr, &inertial19);
@@ -82,7 +83,7 @@ void odomDebug(void*) {
 
 // ----------------- INITIALIZE -----------------
 void initialize() {
-    pros::lcd::initialize();
+    
 
     // Sensors reset
     // inertial19.reset();
@@ -90,8 +91,9 @@ void initialize() {
     // Xaxis.reset_position();
     // Yaxis.reset_position();
     chassis.calibrate(true);
-    DrivetrainL.set_brake_mode_all(pros::E_MOTOR_BRAKE_COAST);
-    DrivetrainR.set_brake_mode_all(pros::E_MOTOR_BRAKE_COAST);
+    c::lcd_initialize();
+    DrivetrainL.set_brake_mode_all(pros::E_MOTOR_BRAKE_BRAKE);
+    DrivetrainR.set_brake_mode_all(pros::E_MOTOR_BRAKE_BRAKE);
     chassis.setPose(0,0,0);
 
     // Start Odom debug task
@@ -107,16 +109,10 @@ void disabled() {}
 void competition_initialize() {}
 
 // ----------------- AUTONOMOUS -----------------
-void autonomous() {
- //RightWing();
- pto.setDriveMode(DRIVE_8_MOTOR);
- driveM8(60.0, 10000, 4, 0);
- //splitLeft();
- //skills();
- //SAWP();
- //test();
-
-
+void autonomous() { 
+    splitLeft();
+    //LeftWing();
+    //RightWing();
 }
 
 // ----------------- OPERATOR CONTROL -----------------
@@ -130,7 +126,12 @@ void opcontrol() {
   new pros::Task(Loadercontrols);
   new pros::Task(Hookcontrols);
   new pros::Task(skillsMidControls);
-  //static pros::Task ptoDisplayTask(PTOStatusDisplay);
+  new pros::Task(odomDebug);
+
+  lemlib::Pose pose = chassis.getPose();
+        pros::lcd::print(0, "X: %.2f", pose.x);
+        pros::lcd::print(1, "Y: %.2f", pose.y);
+        pros::lcd::print(2, "Theta: %.2f", pose.theta);
 
   while (true) {
 

@@ -9,24 +9,9 @@
 
 
 
+
 const double wheelTrack = 11.75; // in inches (left-right distance)
 
-// PID class values (Existing values)
-Praj distPID(0.07, 0, 0.2);
-Praj distPIDnew(0.13, 0, 0.9);
-Praj fastTurnPID(0.03, 0, 0.23);
-
-Praj slowTurnPID(0.03, 0, 0.28);
-
-Praj arcPID(0.15, 0, 0);
-Praj sweepPID(0.05, 0, 0.5);
-
-Praj drivePID(0.05, 0, 0.6);
-Praj headingPID(0.03, 0.0001, 0.23);
-
-/**
- * @brief Clamps a value between a minimum and maximum.
- */
 template <typename T>
 T clamp(T value, T minVal, T maxVal)
 {
@@ -101,9 +86,6 @@ void setDrive(double left, double right)
 }
 
 
-/**
- * @brief Stops all drive motors with brake mode.
- */
 void stops()
 {
     // Stop all motors
@@ -167,6 +149,12 @@ float getAverageDistance()
     float distance_inches = avg_rotations * INCHES_PER_MOTOR_TURN;
 
     return distance_inches;
+}
+
+float restrain(float num, float min, float max){
+  if (num > max) num -= (max-min);
+  if (num < min) num += (max-min);
+  return num;
 }
 
 
@@ -262,417 +250,67 @@ void driveM8(float targetvalue, float timeout, float kP , float kD){
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
- 
-
-
-
-/**
- * @brief Drives forward using an 8-motor drivetrain (4 left, 4 right) with PD control.
- */
-void driveForwardPID8(float distInches, float timeoutMs, float kP, float kD, float minSpeed) {
-    Yaxis.reset_position();
-
-    constexpr float dtMs = 10.0f;
-    constexpr float dtSec = dtMs / 1000.0f;
-    constexpr float settleErrorIn = 0.75f;
-    constexpr int settleCyclesNeeded = 8;  // ~80 ms inside settle band
-    constexpr float minSpeedEnableErrorIn = 2.0f;
-    constexpr float maxDeltaPerCycle = 8.0f;
-
-    float prevErr = distInches;
-    float prevOutput = 0;
-    float elapsed = 0;
-    int settleCycles = 0;
-
-    while (elapsed <= timeoutMs) {
-        // Rotation sensor is in degrees. Convert to linear inches.
-        constexpr float wheelDiameterIn = 3.25f;
-        constexpr float gearRatio = 0.8f; // wheel turns per motor turn (48:60)
-        const float currentInches = (Yaxis.get_position() / 360.0f) *
-                                    (static_cast<float>(M_PI) * wheelDiameterIn) * gearRatio;
-
-        const float err = distInches - currentInches;
-        const float deriv = (err - prevErr) / dtSec;
-
-        float output = (kP * err) + (kD * deriv);
-
-        // keep enough power to overcome stiction only when we are not near target
-        if (fabs(output) > 0.01f && fabs(output) < minSpeed && fabs(err) > minSpeedEnableErrorIn) {
-            output = (output > 0) ? minSpeed : -minSpeed;
-        }
-
-        // slew limit to avoid aggressive forward/reverse flips
-        const float delta = clamp(output - prevOutput, -maxDeltaPerCycle, maxDeltaPerCycle);
-        output = prevOutput + delta;
-
-        output = clamp(output, -127.0f, 127.0f);
-
-        // 4 motors left + 4 motors right
-        DrivetrainL.move(output);
-        DrivetrainR.move(output);
-
-        if (fabs(err) < settleErrorIn) {
-            settleCycles++;
-            if (settleCycles >= settleCyclesNeeded) break;
-        } else {
-            settleCycles = 0;
-        }
-
-        prevErr = err;
-        prevOutput = output;
-        elapsed += dtMs;
-        pros::delay(10);
+void resetPositionWithSensor(pros::Distance& sensor, double sensor_offset, double sensor_angle_offset, double field_half_size) {
+    double sensorReading = sensor.get() / 25.4;
+  
+    if (sensorReading < 0 || sensorReading > 200) {
+        return;
     }
 
-    DrivetrainL.brake();
-    DrivetrainR.brake();
-}
+    lemlib::Pose currentPose = chassis.getPose();
+    
+    double current_heading_deg = fmod(currentPose.theta, 360.0);
+    if (current_heading_deg < 0) current_heading_deg += 360;
 
-float restrain(float num, float min, float max){
-  if (num > max) num -= (max-min);
-  if (num < min) num += (max-min);
-  return num;
-}
-
-
-
-
-
-
-
-
-/**
- * @brief Drives the robot a linear distance using motor encoders and IMU heading stabilization.
- */
-void drive(double distInches, double timeout)
-{
-    distPID.reset();
-    double target = distInches-0.5;
-    double start = getAverageDistance();
-    double lastError = 0;
-    int elapsed = 0;
-
-    while (true)
-    {
-        // Current pose and distance traveled
-        double current= getAverageDistance();
-        double traveled = current-start;
-        
-        if (distInches < 0)
-        {
-            traveled = traveled; 
-        }
-
-        double error = target - traveled;
-        // Compute linear output (PID)
-        double linearOut = distPID.compute(target, traveled);
-        // Clamp output between -1 and 1
-        linearOut = clamp(linearOut, -1.0, 1.0);
-        // Scale to volts
-        linearOut = linearOut * 12.0;
-        linearOut = minVolt(linearOut);
-        double leftVolt = linearOut;
-        double rightVolt = linearOut;
-        setDrivePTO(leftVolt, rightVolt);
-        // Exit conditions
-        if ((fabs(error) < 1 && fabs(error - lastError) < 0.1) || elapsed > timeout)
-            break;
-        lastError = error;
-        elapsed += 10;
-        pros::delay(10);
+    double robot_heading_deg = current_heading_deg + sensor_angle_offset;
+    int headingDeg = ((int)robot_heading_deg % 360 + 360) % 360;
+    
+    bool resettingX = false;
+    double wallSign = 1.0;
+    
+    if (headingDeg >= 315 || headingDeg <= 45) {
+        // Facing top wall = reset Y, positive side
+        resettingX = false;
+        wallSign = 1.0;
+    } else if (headingDeg > 45 && headingDeg <= 135) {
+        // Facing right wall = reset X, positive side
+        resettingX = true;
+        wallSign = 1.0;
+    } else if (headingDeg > 135 && headingDeg <= 225) {
+        // Facing bottom wall = reset Y, negative side
+        resettingX = false;
+        wallSign = -1.0;
+    } else {
+        // Facing left wall = reset X, negative side
+        resettingX = true;
+        wallSign = -1.0;
     }
-
-    stopsPTO();
-}
-
-void driveheading(double distInches, double timeout, double targetHeading)
-{
-    distPID.reset();
-    headingPID.reset();
-
-    double targetDist = distInches + 1;
-    double startDist = getAverageDistance();
-
-    double lastError = 0;
-    int elapsed = 0;
-
-    while (true)
-    {
-        double currentDist = getAverageDistance();
-        double traveled = currentDist - startDist;
-
-        double distError = targetDist - traveled;
-
-        // ----- Distance PID -----
-        double linearOut = distPID.compute(targetDist, traveled);
-        linearOut = clamp(linearOut, -1.0, 1.0);
-        linearOut *= 12.0;
-        linearOut = minVolt(linearOut);
-
-        // ----- Heading PID -----
-        double currentHeading = inertial19.get_heading();
-        double headingError = wrapAngle(targetHeading - currentHeading);
-
-        double turnOut = headingPID.compute(0, headingError);
-
-        // Scale heading correction to 5%
-        turnOut *= 0.05;
-
-        // Convert to volts and clamp
-        turnOut = clamp(turnOut, -12.0, 12.0);
-
-        // ----- Combine outputs -----
-        double leftVolt  = linearOut + turnOut;
-        double rightVolt = linearOut - turnOut;
-
-        setDrivePTO(leftVolt, rightVolt);
-
-        // Exit condition
-        if ((fabs(distError) < 1 && fabs(distError - lastError) < 0.1) ||
-            elapsed > timeout)
-            break;
-
-        lastError = distError;
-        elapsed += 10;
-        pros::delay(10);
+    
+    double wallToCenter = sensorReading + sensor_offset;
+    double actualPos = wallSign * (field_half_size - wallToCenter);
+    
+    if (resettingX) {
+        chassis.setPose(actualPos, currentPose.y, currentPose.theta);
+    } else {
+        chassis.setPose(currentPose.x, actualPos, currentPose.theta);
     }
-
-    stopsPTO();
 }
 
+void resetFront() {
+    resetPositionWithSensor(distF, 1.0, 0.0, 72);
+}
 
-void drivehold(double distInches, double timeout)
-{
-    distPID.reset();
-    double target = distInches + 1; 
-    double start = getAverageDistance();
-    double lastError = 0;
-    int elapsed = 0;
+void resetBack() {
+    resetPositionWithSensor(distB, -4, 180.0, 72);
+}
 
-    while (true)
-    {
-        // Current pose and distance traveled
-        double current= getAverageDistance();
-        double traveled = current-start;
-        
-        if (distInches < 0)
-        {
-            traveled = traveled; 
-        }
+void resetLeft() {
+    resetPositionWithSensor(distL, -4.5, 270.0, 72);
+}
 
-        double error = target - traveled;
-        // Compute linear output (PID)
-        double linearOut = distPID.compute(target, traveled);
-        // Clamp output between -1 and 1
-        linearOut = clamp(linearOut, -1.0, 1.0);
-        // Scale to volts
-        linearOut = linearOut * 12.0;
-        linearOut = minVolt(linearOut);
-        double leftVolt = linearOut;
-        double rightVolt = linearOut;
-        setDrivePTO(leftVolt, rightVolt);
-        // Exit conditions
-        if ((fabs(error) < 1 && fabs(error - lastError) < 0.1) || elapsed > timeout)
-            break;
-        lastError = error;
-        elapsed += 10;
-        pros::delay(10);
-    }
-
-    stopsPTOhold();
+void resetRight() {
+    resetPositionWithSensor(distR, -5.5, 90.0, 72);
 }
 
 
 
-/**
- * @brief Turns the robot to a target absolute heading.
- */
-void turn(double targetHeading)
-{
-    fastTurnPID.reset();
-    slowTurnPID.reset();
-    double elapsedTime = 0;
-    const double timeout = 1500; // ms timeout
-    double startheading = inertial19.get_heading(); 
-    double turnAmount = targetHeading - startheading;
-    if (turnAmount > 360)
-        turnAmount -= 360;
-    if (turnAmount < 0)
-        turnAmount += 360;
-
-     // Normalize target heading to [-180, 180]
-
-    while (true)
-    {
-        // Assuming inertial19 is defined in robot-config.h
-        double heading = inertial19.get_heading(); 
-
-        // Proper angle difference calculation
-        double remaining = targetHeading - heading;
-        while (remaining > 180)
-            remaining -= 360;
-        while (remaining < -180)
-            remaining += 360;
-
-        double turnOutput;
-        // Use the normalized remaining angle for PID
-        if(turnAmount > 139)
-        {
-            turnOutput = slowTurnPID.compute(targetHeading, heading, true);
-        }
-        else
-        {
-            turnOutput = fastTurnPID.compute(targetHeading, heading, true);
-        }
-
-        // Clamp output between -1 and 1, then scale to volts
-        turnOutput = clamp(turnOutput, -1.0, 1.0);
-
-        double leftVolt = 12 * turnOutput;
-        double rightVolt = -12 * turnOutput;
-
-        // Apply minimum voltage
-        leftVolt = minVoltturn(leftVolt);
-        rightVolt = minVoltturn(rightVolt);
-
-        // Exit conditions
-        if (fabs(remaining) < 2.0 || elapsedTime >= timeout)
-            break;
-
-        setDrivePTO(leftVolt, rightVolt);
-
-        elapsedTime += 10;
-        pros::delay(10);
-    }
-
-    stopsPTO();
-}
-
-// /**
-//  * @brief Executes a wide, smooth arc path.
-//  */
-// void arc(double radiusInches, double angleDeg)
-// {
-//     arcPID.reset();
-//     double elapsedTime = 0;
-//     const double maxTime = 3000;       // ms timeout
-//     const double distTolerance = 0.5;  // inches
-//     const double angleTolerance = 1.0; // degrees
-
-//     bool arcLeft = (radiusInches < 0);
-//     double absRadius = fabs(radiusInches);
-
-//     double arcLength = 2.0 * M_PI * absRadius * (fabs(angleDeg) / 360.0);
-//     Odom::Pose startPose = Odom::getPose();
-
-//     // Calculate target heading and normalize to [-180, 180]
-//     double targetHeading = startPose.theta + angleDeg;
-//     while (targetHeading > 180)
-//         targetHeading -= 360;
-//     while (targetHeading < -180)
-//         targetHeading += 360;
-
-//     // Calculate wheel speed ratio
-//     double innerRadius = absRadius - (wheelTrack / 2.0);
-//     double outerRadius = absRadius + (wheelTrack / 2.0);
-//     double speedRatio = innerRadius / outerRadius;
-
-//     while (true)
-//     {
-//         Odom::Pose pose = Odom::getPose();
-
-//         // Calculate traveled distance as Euclidean distance
-//         double dx = pose.x - startPose.x;
-//         double dy = pose.y - startPose.y;
-//         double traveled = sqrt(dx * dx + dy * dy);
-
-//         traveled = traveled / 2;
-//         // Calculate heading error normalized to [-180, 180]
-//         double headingError = targetHeading - pose.theta;
-//         while (headingError > 180)
-//             headingError -= 360;
-//         while (headingError < -180)
-//             headingError += 360;
-
-//         // Exit conditions
-//         if ((fabs(traveled - arcLength) <= distTolerance && fabs(headingError) <= angleTolerance) ||
-//             elapsedTime >= maxTime)
-//             break;
-
-//         // PID output for linear distance
-//         double linearOut = arcPID.compute(arcLength, traveled);
-//         linearOut *= 12.0; // convert to volts
-
-//         // Determine direction (forward or reverse) from sign of angleDeg
-//         linearOut *= (angleDeg >= 0) ? 1.0 : -1.0;
-
-//         double leftVolt = linearOut;
-//         double rightVolt = linearOut;
-
-//         // Correct arc direction logic
-//         if (arcLeft)
-//         {
-//             // Left arc: right wheel is inner (slower), left wheel is outer (faster)
-//             rightVolt *= speedRatio;
-//         }
-//         else
-//         {
-//             // Right arc: left wheel is inner (slower), right wheel is outer (faster)
-//             leftVolt *= speedRatio;
-//         }
-
-//         setDrive(leftVolt, rightVolt);
-
-//         elapsedTime += 10;
-//         pros::delay(10);
-//     }
-
-//     stops();
-// }
-
-// /**
-//  * @brief Performs a sweep turn (pivots one side only).
-//  */
-// void Sweep(double targetAngleDeg, bool left)
-// {
-//     sweepPID.reset();
-//     double elapsedTime = 0;
-//     const double timeout = 2000; // ms timeout
-
-//     while (true)
-//     {
-//         // Current pose and heading
-//         Odom::Pose pose = Odom::getPose();
-//         double heading = pose.theta;
-
-//         // PID output for turning
-//         double turnOutput = sweepPID.compute(targetAngleDeg, heading, true);
-
-//         double remaining = targetAngleDeg - heading;
-//         if (remaining < -180)
-//             remaining += 360;
-//         if (remaining > 180)
-//             remaining -= 360;
-
-//         // Exit conditions
-//         if (fabs(remaining) < 1.0 || elapsedTime >= timeout)
-//             break;
-
-//         // Clamp turn output and convert to volts
-//         turnOutput = clamp(turnOutput, -1.0, 1.0);
-//         double Volts = minVolt(turnOutput * 12.0);
-
-//         // Set voltages based on turn direction
-//         if (left)
-//             setDrive(Volts, 0);
-//         else
-//             setDrive(0, Volts);
-
-//         elapsedTime += 10;
-//        pros::delay(10);
-//     }
-
-//     stops();
-// }
