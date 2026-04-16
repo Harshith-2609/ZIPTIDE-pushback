@@ -219,7 +219,7 @@ void SAWP() {
 
   ///////////////////////////ALL MIDDLE BLOCKS//////////////////////////////
   chassis.turnToHeading(10, 1000, {.maxSpeed = 127, .minSpeed = 90, .earlyExitRange = 15}, false);
-  chassis.moveToPoint(18, 23.5, 3000, {.forwards = true, .minSpeed = 90, .earlyExitRange = 9}, true);
+  chassis.moveToPoint(18, 21.5, 3000, {.forwards = true, .minSpeed = 90, .earlyExitRange = 9}, true);
   pros::delay(250);
   Loader.extend();
   pros::delay(350);
@@ -227,7 +227,7 @@ void SAWP() {
   pros::delay(400);
   Loader.extend();
   chassis.waitUntilDone();
-  chassis.turnToHeading(290, 1000, {.minSpeed = 100, .earlyExitRange = 30}, false);
+  chassis.turnToHeading(280, 1000, {.minSpeed = 100, .earlyExitRange = 30}, false);
 
 
   //moving to 2nd half
@@ -249,7 +249,7 @@ void SAWP() {
 
 
   //   //////////////////////////MID GOAL 3 BLOCKS//////////////////////////////
-  chassis.moveToPoint(30, -3, 2500, {.forwards = false, .minSpeed = 90, .earlyExitRange = 20},false);
+  chassis.moveToPoint(30, -3, 2500, {.forwards = false, .minSpeed = 90, .earlyExitRange = 13},false);
   pto.setDriveMode(DRIVE_4_MOTOR);
   Midgoal.extend();
   DrivePTO.move(-127);
