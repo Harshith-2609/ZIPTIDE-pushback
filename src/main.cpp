@@ -110,7 +110,8 @@ void competition_initialize() {}
 
 // ----------------- AUTONOMOUS -----------------
 void autonomous() { 
-    splitLeft();
+    SAWP();
+    //splitLeft();
     //LeftWing();
     //RightWing();
 }
