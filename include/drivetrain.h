@@ -4,13 +4,15 @@ float tovolt(float percentage);
 
 
 /////master control functions//////
-int DriveTrainControls();
-int IntakeControls();
-int OutakeControls();
-int IntakeRevControls();
-int MidControls();
-int DrivePTOcontrols();
-int Loadercontrols();
-int Hookcontrols();
-int skillsMidControls();
-int Lowcontrols();
+void DriveTrainControls();
+void IntakeControls();
+void OutakeControls();
+void IntakeRevControls();
+void MidControls();
+void DrivePTOcontrols();
+void Loadercontrols();
+void Hookcontrols();
+void skillsMidControls();
+void Lowcontrols();
+void macroWINGleft();
+void macroMIDGOAL();

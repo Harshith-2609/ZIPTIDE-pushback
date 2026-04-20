@@ -1,5 +1,6 @@
 #include "PTO.h"
 #include "main.h"
+#include "motion.h"
 #include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
 
@@ -7,10 +8,11 @@
 float tovolt(float percentage) { return (percentage * 12000.0 / 100.0); }
 
 bool drivetrainEnabled = true;
+bool formacro = true;
 
 // --------- DRIVETRAIN ---------
-int DriveTrainControls() {
-  while (true) {
+void DriveTrainControls() {
+  while (formacro) {
 
     if (!drivetrainEnabled) {
       // Stop all drivetrain motors
@@ -58,7 +60,7 @@ int DriveTrainControls() {
 }
 
 // --------- PTO CONTROL ---------
-int DrivePTOcontrols() {
+void DrivePTOcontrols() {
   bool DrivePTO1 = false;
   while (true) {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
@@ -80,7 +82,7 @@ int DrivePTOcontrols() {
   }
 }
 
-int IntakeControls() {
+void IntakeControls() {
   while (true) {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
       if (pto.getCurrentDriveMode() == DRIVE_6_MOTOR) {
@@ -99,7 +101,7 @@ int IntakeControls() {
     pros::delay(10);
   }
 }
-int IntakeRevControls() {
+void IntakeRevControls() {
   while (true) {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
       if (pto.getCurrentDriveMode() == DRIVE_4_MOTOR) {
@@ -120,7 +122,7 @@ int IntakeRevControls() {
     pros::delay(10);
   }
 }
-int OutakeControls() {
+void OutakeControls() {
   while (true) {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
       IntakePTO.move(127);
@@ -145,7 +147,7 @@ int OutakeControls() {
     pros::delay(10);
   }
 }
-int MidControls() {
+void MidControls() {
   while (true) {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
       if (pto.getCurrentDriveMode() == DRIVE_4_MOTOR) {
@@ -169,7 +171,7 @@ int MidControls() {
   }
 }
 
-int skillsMidControls() {
+void skillsMidControls() {
   while (true) {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
       if (pto.getCurrentDriveMode() == DRIVE_4_MOTOR) {
@@ -201,7 +203,7 @@ int skillsMidControls() {
 }
 
 // --------- LOADER ---------
-int Loadercontrols() {
+void Loadercontrols() {
   static bool Loader1 = false;
 
   while (true) {
@@ -218,7 +220,7 @@ int Loadercontrols() {
 }
 
 // --------- HOOK CONTROL ---------
-int Hookcontrols() {
+void Hookcontrols() {
   static bool wing = false;
 
   while (true) {
@@ -233,7 +235,7 @@ int Hookcontrols() {
   }
 }
 
-int Lowcontrols() {
+void Lowcontrols() {
   while (true) {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
       Low.extend();
@@ -243,6 +245,48 @@ int Lowcontrols() {
       IntakePTO.brake();
       Low.retract();
 
+    }
+    pros::delay(10);
+  }
+}
+
+void macroWINGleft() {
+  while (true) {
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+      formacro = false;
+      pros::delay(50); 
+
+      chassis.setPose(0, 0, 0);
+      chassis.moveToPoint(-8, 12, 1000, {}, false);   // false = blocking, waits to finish
+      chassis.turnToHeading(180, 1000, {}, false);     // false = blocking, waits to finish
+
+      chassis.cancelAllMotions(); 
+      formacro = true;
+
+      while (master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+        pros::delay(10);
+      }
+    }
+    pros::delay(10);
+  }
+}
+
+void macroMIDGOAL() {
+  while (true) {
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+      formacro = false;
+      pros::delay(50);
+
+      chassis.setPose(0, 0, 0);
+      chassis.moveToPoint(8, 16, 1000, {.forwards = true, .minSpeed = 100, .earlyExitRange = 10.5}, false);
+      chassis.turnToHeading(35, 1000, {}, false);
+
+      chassis.cancelAllMotions();
+      formacro = true;
+
+      while (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+        pros::delay(10);
+      }
     }
     pros::delay(10);
   }

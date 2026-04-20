@@ -1,6 +1,7 @@
 #include "main.h"
 #include "Autons.h"
 #include "Motion.h"
+#include "drivetrain.h"
 #include "liblvgl/llemu.h"
 #include "pros/distance.hpp"
 #include "pros/motors.h"
@@ -128,7 +129,9 @@ void opcontrol() {
   new pros::Task(Hookcontrols);
   new pros::Task(skillsMidControls);
   new pros::Task(odomDebug);
-
+  new pros::Task(macroWINGleft);
+  new pros::Task(macroMIDGOAL);
+  
   lemlib::Pose pose = chassis.getPose();
         pros::lcd::print(0, "X: %.2f", pose.x);
         pros::lcd::print(1, "Y: %.2f", pose.y);

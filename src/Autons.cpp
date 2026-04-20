@@ -7,6 +7,7 @@
 #include "pros/rtos.hpp"
 #include <algorithm>
 #include <cmath>
+#include <istream>
 
 void testing() {
   chassis.setPose(0, -6.5, 270);
@@ -219,7 +220,9 @@ void SAWP() {
 
   ///////////////////////////ALL MIDDLE BLOCKS//////////////////////////////
   chassis.turnToHeading(10, 1000, {.maxSpeed = 127, .minSpeed = 90, .earlyExitRange = 15}, false);
-  chassis.moveToPoint(18, 21.5, 3000, {.forwards = true, .minSpeed = 90, .earlyExitRange = 9}, true);
+  chassis.setPose(-36, 0, chassis.getPose().theta-90);
+  
+  chassis.moveToPoint(24, 1, 3000, {.forwards = true, .minSpeed = 90, .earlyExitRange = 9}, true);
   pros::delay(250);
   Loader.extend();
   pros::delay(350);
@@ -227,15 +230,15 @@ void SAWP() {
   pros::delay(400);
   Loader.extend();
   chassis.waitUntilDone();
-  chassis.turnToHeading(280, 1000, {.minSpeed = 100, .earlyExitRange = 30}, false);
+  chassis.turnToHeading( 280-90, 1000, {.maxSpeed = 127}, false);
 
 
-  //moving to 2nd half
-  chassis.moveToPose(-10 , 36,270, 1500, {.forwards = true, .horizontalDrift = 8, .lead = 0, . minSpeed = 90, .earlyExitRange =17}, false);
+  //moving to long goal 2
+  chassis.moveToPose(36 , -24,270-90, 1500, {.forwards = true, .horizontalDrift = 8, .lead = 0, . minSpeed = 90, .earlyExitRange =15}, false);
+
   double yhere2 = chassis.getPose().y;
-
   ///////////SECOND LONG GOAL 4 BLOCKS///////////////////////
-  chassis.moveToPoint(26, yhere2, 1000, {.forwards = false, .minSpeed = 100, .earlyExitRange = 6},false);
+  chassis.moveToPoint(0, yhere2, 1000, {.forwards = false, .minSpeed = 100, .earlyExitRange = 6},false);
   pto.setDriveMode(DRIVE_4_MOTOR);
   DrivePTO.move(127); // outakes into far long goal 6 blocks
   pros::delay(1300);
@@ -243,23 +246,24 @@ void SAWP() {
   pto.setDriveMode(DRIVE_6_MOTOR);
   
   ///into loader
-  chassis.moveToPoint(-22, yhere2-1, 1000, {.forwards = true}, false);
-  pros:delay(500);
+  chassis.moveToPoint(-38, yhere2, 1000, {.forwards = true}, false);
+  pros::delay(300);
   Intake2.brake();
 
 
   //   //////////////////////////MID GOAL 3 BLOCKS//////////////////////////////
-  chassis.moveToPoint(30, -3, 2500, {.forwards = false, .minSpeed = 90, .earlyExitRange = 13},false);
+  chassis.moveToPoint(10, 45, 2500, {.forwards = false, .minSpeed = 120, .earlyExitRange = 13},false);
   pto.setDriveMode(DRIVE_4_MOTOR);
   Midgoal.extend();
   DrivePTO.move(-127);
   IntakePTO.move(85);
-  pros::delay(1000);
+  pros::delay(2000);
   Midgoal.retract();
   IntakePTO.brake();
   DrivePTO.brake();
   pto.setDriveMode(DRIVE_6_MOTOR);
 }
+
 
 void skills() {
   Intake2.move(127);
