@@ -12,7 +12,12 @@ bool formacro = true;
 
 // --------- DRIVETRAIN ---------
 void DriveTrainControls() {
-  while (formacro) {
+  while (true) {
+
+    if (!formacro) {  // macro running — just idle, don't brake
+      pros::delay(10);
+      continue;
+    }
 
     if (!drivetrainEnabled) {
       // Stop all drivetrain motors
@@ -257,15 +262,11 @@ void macroWINGleft() {
       pros::delay(50); 
 
       chassis.setPose(0, 0, 0);
-      chassis.moveToPoint(-8, 12, 1000, {}, false);   // false = blocking, waits to finish
-      chassis.turnToHeading(180, 1000, {}, false);     // false = blocking, waits to finish
+      chassis.moveToPoint(-10, 12, 1000, {}, false);   // false = blocking, waits to finish
+      chassis.turnToHeading(175, 1000, {}, false);     // false = blocking, waits to finish
 
       chassis.cancelAllMotions(); 
       formacro = true;
-
-      while (master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
-        pros::delay(10);
-      }
     }
     pros::delay(10);
   }
@@ -278,15 +279,12 @@ void macroMIDGOAL() {
       pros::delay(50);
 
       chassis.setPose(0, 0, 0);
-      chassis.moveToPoint(8, 16, 1000, {.forwards = true, .minSpeed = 100, .earlyExitRange = 10.5}, false);
-      chassis.turnToHeading(35, 1000, {}, false);
+      chassis.moveToPoint(7, 16, 1000, {.forwards = true, .minSpeed = 100, .earlyExitRange = 10.5}, false);
+      chassis.turnToHeading(0, 1000, {}, false);
 
       chassis.cancelAllMotions();
       formacro = true;
 
-      while (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
-        pros::delay(10);
-      }
     }
     pros::delay(10);
   }
